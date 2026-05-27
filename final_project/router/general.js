@@ -5,7 +5,6 @@ let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 
 const public_users = express.Router();
-const API_BASE_URL = "http://localhost:5000";
 
 // Task 6 - Register new user
 public_users.post("/register", (req, res) => {
@@ -25,114 +24,107 @@ public_users.post("/register", (req, res) => {
 
 // Task 1 - Get all books
 public_users.get('/', async (req, res) => {
-  try {
-    const allBooks = await Promise.resolve(books);
-    return res.status(200).json(allBooks);
-  } catch (error) {
-    return res.status(500).json({ message: "Error retrieving books" });
-  }
+  return res.status(200).json(books);
 });
 
 // Task 2 - Get book by ISBN
 public_users.get('/isbn/:isbn', (req, res) => {
   const isbn = req.params.isbn;
 
-  return Promise.resolve(books[isbn])
-    .then((book) => {
-      if (!book) {
-        return res.status(404).json({ message: "Book not found" });
-      }
-      return res.status(200).json(book);
-    })
-    .catch(() => res.status(500).json({ message: "Error retrieving book" }));
+  if (books[isbn]) {
+    return res.status(200).json(books[isbn]);
+  }
+
+  return res.status(404).json({ message: "Book not found" });
 });
 
 // Task 3 - Get books by author
-public_users.get('/author/:author', async (req, res) => {
-  try {
-    const author = decodeURIComponent(req.params.author).toLowerCase();
+public_users.get('/author/:author', (req, res) => {
+  const author = decodeURIComponent(req.params.author).toLowerCase();
 
-    const filteredBooks = Object.fromEntries(
-      Object.entries(books).filter(([isbn, book]) =>
-        book.author.toLowerCase() === author
-      )
-    );
+  const filteredBooks = Object.fromEntries(
+    Object.entries(books).filter(([isbn, book]) =>
+      book.author.toLowerCase() === author
+    )
+  );
 
-    return res.status(200).json(filteredBooks);
-  } catch (error) {
-    return res.status(500).json({ message: "Error retrieving books by author" });
-  }
+  return res.status(200).json(filteredBooks);
 });
 
 // Task 4 - Get books by title
-public_users.get('/title/:title', async (req, res) => {
-  try {
-    const title = decodeURIComponent(req.params.title).toLowerCase();
+public_users.get('/title/:title', (req, res) => {
+  const title = decodeURIComponent(req.params.title).toLowerCase();
 
-    const filteredBooks = Object.fromEntries(
-      Object.entries(books).filter(([isbn, book]) =>
-        book.title.toLowerCase() === title
-      )
-    );
+  const filteredBooks = Object.fromEntries(
+    Object.entries(books).filter(([isbn, book]) =>
+      book.title.toLowerCase() === title
+    )
+  );
 
-    return res.status(200).json(filteredBooks);
-  } catch (error) {
-    return res.status(500).json({ message: "Error retrieving books by title" });
-  }
+  return res.status(200).json(filteredBooks);
 });
 
 // Task 5 - Get book review
 public_users.get('/review/:isbn', (req, res) => {
   const isbn = req.params.isbn;
 
-  if (!books[isbn]) {
-    return res.status(404).json({ message: "Book not found" });
+  if (books[isbn]) {
+    return res.status(200).json(books[isbn].reviews || {});
   }
 
-  return res.status(200).json(books[isbn].reviews || {});
+  return res.status(404).json({ message: "Book not found" });
 });
 
 
-// Task 10 - Get all books using async callback / async-await with Axios
-async function getAllBooksUsingAxiosAsyncAwait() {
+// Task 10 - Get all books using async callback function with Axios
+async function getAllBooks(callback) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/`);
+    const response = await axios.get("http://localhost:5000/");
+    callback(null, response.data);
+  } catch (error) {
+    callback(error, null);
+  }
+}
+
+// Task 11 - Search by ISBN using Promise callbacks with Axios
+function getFromISBN(isbn) {
+  return new Promise((resolve, reject) => {
+    axios.get(`http://localhost:5000/isbn/${isbn}`)
+      .then((response) => {
+        resolve(response.data);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+
+// Task 12 - Search by Author using async/await with Axios
+async function getFromAuthor(author) {
+  try {
+    const response = await axios.get(
+      `http://localhost:5000/author/${encodeURIComponent(author)}`
+    );
     return response.data;
   } catch (error) {
     return error.message;
   }
 }
 
-// Task 11 - Get book details based on ISBN using Promise callbacks with Axios
-function getBookByISBNUsingAxiosPromise(isbn) {
-  return new Promise((resolve, reject) => {
-    axios.get(`${API_BASE_URL}/isbn/${isbn}`)
-      .then((response) => resolve(response.data))
-      .catch((error) => reject(error.message));
-  });
-}
-
-// Task 12 - Get book details based on Author using async-await with Axios
-async function getBooksByAuthorUsingAxiosAsyncAwait(author) {
+// Task 13 - Search by Title using async/await with Axios
+async function getFromTitle(title) {
   try {
-    const response = await axios.get(`${API_BASE_URL}/author/${encodeURIComponent(author)}`);
+    const response = await axios.get(
+      `http://localhost:5000/title/${encodeURIComponent(title)}`
+    );
     return response.data;
   } catch (error) {
     return error.message;
   }
-}
-
-// Task 13 - Get book details based on Title using Promise callbacks with Axios
-function getBooksByTitleUsingAxiosPromise(title) {
-  return new Promise((resolve, reject) => {
-    axios.get(`${API_BASE_URL}/title/${encodeURIComponent(title)}`)
-      .then((response) => resolve(response.data))
-      .catch((error) => reject(error.message));
-  });
 }
 
 module.exports.general = public_users;
-module.exports.getAllBooksUsingAxiosAsyncAwait = getAllBooksUsingAxiosAsyncAwait;
-module.exports.getBookByISBNUsingAxiosPromise = getBookByISBNUsingAxiosPromise;
-module.exports.getBooksByAuthorUsingAxiosAsyncAwait = getBooksByAuthorUsingAxiosAsyncAwait;
-module.exports.getBooksByTitleUsingAxiosPromise = getBooksByTitleUsingAxiosPromise;
+module.exports.getAllBooks = getAllBooks;
+module.exports.getFromISBN = getFromISBN;
+module.exports.getFromAuthor = getFromAuthor;
+module.exports.getFromTitle = getFromTitle;
