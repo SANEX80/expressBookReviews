@@ -1,2 +1,3 @@
 curl -b submission/cookies.txt -X DELETE http://localhost:5000/customer/auth/review/1
-{"message":"User not logged in"}{"message":"No reviews found for this book."}
+{"message":"Review deleted successfully"}
+{}
