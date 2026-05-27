@@ -134,3 +134,45 @@ module.exports.getAllBooksUsingAsync = getAllBooksUsingAsync;
 module.exports.getBookByISBNUsingAsync = getBookByISBNUsingAsync;
 module.exports.getBookByAuthorUsingAsync = getBookByAuthorUsingAsync;
 module.exports.getBookByTitleUsingAsync = getBookByTitleUsingAsync;
+
+// Explicit Task 10-13 implementations using Axios, Promises, and async/await
+
+async function task10_getAllBooksUsingAsyncAwait() {
+  try {
+    const response = await axios.get('http://localhost:5000/');
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+function task11_getBookByISBNUsingPromise(isbn) {
+  return new Promise((resolve, reject) => {
+    axios.get(`http://localhost:5000/isbn/${isbn}`)
+      .then(response => resolve(response.data))
+      .catch(error => reject(error));
+  });
+}
+
+async function task12_getBooksByAuthorUsingAsyncAwait(author) {
+  try {
+    const response = await axios.get(`http://localhost:5000/author/${encodeURIComponent(author)}`);
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+async function task13_getBooksByTitleUsingAsyncAwait(title) {
+  try {
+    const response = await axios.get(`http://localhost:5000/title/${encodeURIComponent(title)}`);
+    return response.data;
+  } catch (error) {
+    return error.message;
+  }
+}
+
+module.exports.task10_getAllBooksUsingAsyncAwait = task10_getAllBooksUsingAsyncAwait;
+module.exports.task11_getBookByISBNUsingPromise = task11_getBookByISBNUsingPromise;
+module.exports.task12_getBooksByAuthorUsingAsyncAwait = task12_getBooksByAuthorUsingAsyncAwait;
+module.exports.task13_getBooksByTitleUsingAsyncAwait = task13_getBooksByTitleUsingAsyncAwait;
