@@ -1,2 +1,2 @@
 curl -b submission/cookies.txt -X PUT "http://localhost:5000/customer/auth/review/1?review=Great%20book"
-{"message":"Book review posted successfully"}
+{"message":"User not logged in"}{"message":"No reviews found for this book."}
